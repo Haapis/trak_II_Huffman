@@ -2,7 +2,7 @@
 
 import sys
 from Queue import PriorityQueue
-
+import heapq # Mitäs vittua? Tätä ei käytetä mihkään, mutta ilman sitä priorityqueue fukkaa.
 
 class HuffmanNode():
     '''
@@ -126,7 +126,7 @@ def read_in_raw(filename):
     for key in tokenized.keys():
         weight = tokenized[key]
         node = HuffmanNode(weight=weight, symbol=key)
-        queue.put([weight, node])
+        queue.put((weight, node))
 
     return queue
 
@@ -143,6 +143,7 @@ def create_huffman_tree(filename):
         PENDING
     '''
     queue = read_in_raw(filename)
+    counter = 0
     while queue.qsize() > 1:
         left = queue.get()[1]
         right = queue.get()[1]
@@ -151,23 +152,20 @@ def create_huffman_tree(filename):
                             left_child=left,
                             right_child=right
                             )
-        queue.put([weight,node])
+        queue.put((weight,node))
+        counter += 1
 
-    root_t = queue.get()
-    root = root_t[1]
+    root = queue.get()[1]
 
     return root
 
 def iterate_tree(root, binary=''):
-    huffman = binary
     if root.get_left_child():
-        huffman += '0'
-        iterate_tree(root.get_left_child(),huffman)
+        iterate_tree(root.get_left_child(),binary+'0')
     if root.get_right_child():
-        huffman += '1'
-        iterate_tree(root.get_right_child(),huffman)
+        iterate_tree(root.get_right_child(),binary+'1')
     if root.get_symbol():
-        print 'Symbol: %s,      Huffman: %s'%(root.get_symbol(),huffman)
+        print('Symbol: %s,      Huffman: %s,        weight: %d'%(root.get_symbol(),binary, root.get_weight()),)
 
 
 def main():
@@ -178,14 +176,14 @@ def main():
         Invalid commandline arguments.
 
         Proper usage:
-            python huffman.py -(option) input/output filename.
+            python huffman.py -(option) input filename.
 
             Options:
                 -e      Encode given file with Huffman compression.
                 -d      Decode given file from Huffman compression.
 
-            Input/output filename should contain path to file,
-            if the files location differs from scripts location.
+            Input filename should contain path to file, if the
+            files location differs from scripts location.
         '''
         sys.exit(message)
     else:
