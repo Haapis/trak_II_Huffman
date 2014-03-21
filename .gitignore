@@ -1,5 +1,9 @@
 *.py[cod]
 
+# Omat ignoret
+*.txt
+
+
 # C extensions
 *.so
 
