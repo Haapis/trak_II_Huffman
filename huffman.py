@@ -133,6 +133,7 @@ def main():
         sys.exit(message)
     else:
         option = sys.argv[1]
+        filename = sys.argv[2]
         if option is '-e':
             # Encode flow here
             pass
@@ -141,8 +142,6 @@ def main():
             pass
         else:
             sys.exit('Invalid option: %s'%option)
-        filename = sys.argv[2]
-
 
     ##
     # Omaa testiä.
