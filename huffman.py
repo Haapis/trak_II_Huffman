@@ -120,15 +120,13 @@ def read_in_raw(filename):
                 tokenized[byte] += 1
             byte = f.read(1)
 
-    data = {}
-    for k in tokenized.keys():
-        data[tokenized[k]] = k
-
+    print 'number of unique characters: %d'%len(tokenized.keys())
     # Create and populate priority queue with Huffman nodes
     queue = PriorityQueue()
-    for weight in sorted(data.keys()):
-        node = HuffmanNode(weight=weight, symbol=data[weight])
-        queue.put(node)
+    for key in tokenized.keys():
+        weight = tokenized[key]
+        node = HuffmanNode(weight=weight, symbol=key)
+        queue.put([weight, node])
 
     return queue
 
@@ -146,16 +144,17 @@ def create_huffman_tree(filename):
     '''
     queue = read_in_raw(filename)
     while queue.qsize() > 1:
-        left = queue.get()
-        right = queue.get()
+        left = queue.get()[1]
+        right = queue.get()[1]
         weight = left.get_weight() + right.get_weight()
         node = HuffmanNode(weight=weight,
                             left_child=left,
                             right_child=right
                             )
-        queue.put(node)
+        queue.put([weight,node])
 
-    root = queue.get()
+    root_t = queue.get()
+    root = root_t[1]
 
     return root
 
