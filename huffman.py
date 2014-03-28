@@ -97,7 +97,7 @@ class HuffmanNode():
         self.parent = node
 
 
-def read_in_raw(filename):
+def read_in_raw(filename, return_raw=False):
     '''
     Reads given non Huffman coded file as bytecode, and calculates weights for each byte.
 
@@ -112,6 +112,9 @@ def read_in_raw(filename):
     # Read file, and calculate weights.
     tokenized = {}
     with open(filename, 'rb') as f:
+        if return_raw:
+            raw_string = f.read()
+            return raw_string
         byte = f.read(1)
         while byte:
             if byte not in tokenized.keys():
@@ -160,14 +163,17 @@ def create_huffman_tree(filename):
     return root
 
 def iterate_tree(root, binary=''):
+    symbols_and_binaries = []
     if root.get_left_child():
-        iterate_tree(root.get_left_child(),binary+'0')
+        symbols_and_binaries.extend(iterate_tree(root.get_left_child(),binary+'0'))
     if root.get_right_child():
-        iterate_tree(root.get_right_child(),binary+'1')
+        symbols_and_binaries.extend(iterate_tree(root.get_right_child(),binary+'1'))
     if root.get_symbol():
         print('Symbol: %s,      Huffman: %s,        weight: %d'%(root.get_symbol(),binary, root.get_weight()),)
-
-
+        symbols_and_binaries.append((root.get_symbol(), binary))
+    if symbols_and_binaries:
+        return symbols_and_binaries
+    
 def main():
     reload(sys)
     sys.setdefaultencoding('utf-8')
@@ -192,7 +198,11 @@ def main():
         if option in '-e':
             # Encode flow here
             root = create_huffman_tree(filename)
-            iterate_tree(root)
+            symbol_binary_dict = dict(iterate_tree(root))
+            raw_string =  read_in_raw(filename, return_raw=True)
+            encoded_string = ''.join(symbol_binary_dict[char] for char in raw_string)
+            with open('output', 'wb') as textfile:
+                textfile.write(encoded_string)
         elif option in '-d':
             # Decode flow here
             pass
