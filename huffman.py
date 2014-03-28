@@ -105,9 +105,11 @@ def read_in_raw(filename, return_raw=False):
         filename: String, string representation of the inputfilename.
             Must include path to the file if not in the same directory as
             this script.
+        return_raw (optional): Boolean, if true, return the raw input
 
     Returns:
         PriorityQueue object containing Huffman nodes.
+        If return_raw is true, return the raw input from input file
     '''
     # Read file, and calculate weights.
     tokenized = {}
@@ -162,6 +164,7 @@ def create_huffman_tree(filename):
 
     return root
 
+# Assigns binary representations to symbols and returns a list of tuples containing assigned values
 def iterate_tree(root, binary=''):
     symbols_and_binaries = []
     if root.get_left_child():
