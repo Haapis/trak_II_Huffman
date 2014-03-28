@@ -3,6 +3,7 @@
 import sys
 from Queue import PriorityQueue
 import heapq # Mitäs vittua? Tätä ei käytetä mihkään, mutta ilman sitä priorityqueue fukkaa.
+import pickle
 
 class HuffmanNode():
     '''
@@ -161,7 +162,7 @@ def create_huffman_tree(filename):
         counter += 1
 
     root = queue.get()[1]
-
+    pickle.dump(root, open('tree', 'wb'))
     return root
 
 # Assigns binary representations to symbols and returns a list of tuples containing assigned values
@@ -176,6 +177,23 @@ def iterate_tree(root, binary=''):
         symbols_and_binaries.append((root.get_symbol(), binary))
     if symbols_and_binaries:
         return symbols_and_binaries
+
+def decode(root, binary):
+    decoded_chars = []
+    node = root
+    for bit in binary:
+        if bit == '0':
+            node = node.get_left_child()
+        else:
+            node = node.get_right_child()
+
+        symbol = node.get_symbol()
+        if symbol:
+            decoded_chars.append(symbol)
+            node = root
+        
+    decoded_string = ''.join(decoded_chars)
+    return decoded_string
     
 def main():
     reload(sys)
@@ -208,10 +226,13 @@ def main():
                 textfile.write(encoded_string)
         elif option in '-d':
             # Decode flow here
-            pass
+            root = pickle.load(open('tree', 'rb'))
+            with open(filename, 'rb') as textfile:
+                binary = textfile.read() 
+            decoded_string = decode(root, binary)
+            print decoded_string
         else:
             sys.exit('Invalid option: %s'%option)
-
 
 if __name__ == '__main__':
     main()
