@@ -2,6 +2,7 @@
 
 import sys
 from Queue import PriorityQueue
+from array import *
 import heapq # Mitäs vittua? Tätä ei käytetä mihkään, mutta ilman sitä priorityqueue fukkaa.
 import pickle
 
@@ -161,6 +162,7 @@ def create_huffman_tree(filename):
         queue.put((weight,node))
         counter += 1
 
+
     root = queue.get()[1]
     pickle.dump(root, open('tree', 'wb'))
     return root
@@ -173,27 +175,70 @@ def iterate_tree(root, binary=''):
     if root.get_right_child():
         symbols_and_binaries.extend(iterate_tree(root.get_right_child(),binary+'1'))
     if root.get_symbol():
-        print('Symbol: %s,      Huffman: %s,        weight: %d'%(root.get_symbol(),binary, root.get_weight()),)
+        # print('Symbol: %s,      Huffman: %s,        weight: %d'%(root.get_symbol(),binary, root.get_weight()),)
         symbols_and_binaries.append((root.get_symbol(), binary))
     if symbols_and_binaries:
         return symbols_and_binaries
 
-def decode(root, binary):
-    decoded_chars = []
-    node = root
-    for bit in binary:
-        if bit == '0':
-            node = node.get_left_child()
-        else:
-            node = node.get_right_child()
+def encode(huffman_alphabet, input_filename):
+    '''
+    Compresses file with huffman compression. File to be compressed is defined by input_filename
 
-        symbol = node.get_symbol()
-        if symbol:
-            decoded_chars.append(symbol)
-            node = root
-        
-    decoded_string = ''.join(decoded_chars)
-    return decoded_string
+    Args:
+        huffman_alphabet: Dict, contains huffman coding for each symbol. (from input file)
+        input_filename: String, defines which file is to be compressed. If file is in different
+            directory, filename should also contain path to the file.
+    '''
+    binary_string = ''
+    with open(input_filename, 'rb') as f:
+        byte = f.read(1)
+        while byte:
+            binary_string += huffman_alphabet[byte]
+            byte = f.read(1)
+    
+    outfile = input_filename[:-4]+'.huff'
+    #bytearray = bytearray(binary_string)
+    with open(outfile, 'wb') as out:
+        byte_array = array('B')
+        low = 0
+        high = 8
+        while True:
+            if(high<len(binary_string)):
+                byte_array.append(int(binary_string[low:high],2))
+                low = high
+                high += 8
+            else:
+                byte_array.append(int(binary_string[low:],2))
+                break
+        byte_array.tofile(out)
+            
+
+def decode(root, input_file):
+    outfile = 'decoded_%s'%(input_file[:-4]+'txt')
+    inf = open(input_file, 'rb')
+    binary = inf.read()
+    inf.close()
+    decoded = ''
+    node = root
+    for byte in binary:
+        byte = bin(ord(byte))[2:].rjust(8, '0')
+        for bit in byte:
+            if bit == '0':
+                node = node.get_left_child()
+            else:
+                node = node.get_right_child()
+
+            symbol = node.get_symbol()
+            if symbol:
+                decoded += symbol
+                node = root
+    
+
+
+    with open(outfile, 'wb') as out:
+        out.write(decoded)
+    # decoded_string = ''.join(decoded_chars)
+    # return decoded_string
     
 def main():
     reload(sys)
@@ -217,20 +262,18 @@ def main():
         option = sys.argv[1]
         filename = sys.argv[2]
         if option in '-e':
-            # Encode flow here
+            # Encode flow here         
             root = create_huffman_tree(filename)
-            symbol_binary_dict = dict(iterate_tree(root))
-            raw_string =  read_in_raw(filename, return_raw=True)
-            encoded_string = ''.join(symbol_binary_dict[char] for char in raw_string)
-            with open('output', 'wb') as textfile:
-                textfile.write(encoded_string)
+            huffman_alphabet = dict(iterate_tree(root))
+            encode(huffman_alphabet, filename)
         elif option in '-d':
             # Decode flow here
             root = pickle.load(open('tree', 'rb'))
-            with open(filename, 'rb') as textfile:
-                binary = textfile.read() 
-            decoded_string = decode(root, binary)
-            print decoded_string
+            decode(root, filename)
+            # with open(filename, 'rb') as textfile:
+            #     binary = textfile.read() 
+            # decoded_string = decode(root, binary)
+            # print decoded_string
         else:
             sys.exit('Invalid option: %s'%option)
 
