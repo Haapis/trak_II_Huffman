@@ -3,7 +3,7 @@
 import sys
 from Queue import PriorityQueue
 from array import *
-import heapq # Mitäs vittua? Tätä ei käytetä mihkään, mutta ilman sitä priorityqueue fukkaa.
+import heapq 
 import pickle
 
 class HuffmanNode():
@@ -196,7 +196,7 @@ def encode(huffman_alphabet, input_filename):
             binary_string += huffman_alphabet[byte]
             byte = f.read(1)
     
-    outfile = input_filename[:-4]+'.huff'
+    outfile = input_filename+'.huff'
     #bytearray = bytearray(binary_string)
     with open(outfile, 'wb') as out:
         byte_array = array('B')
@@ -214,7 +214,7 @@ def encode(huffman_alphabet, input_filename):
             
 
 def decode(root, input_file):
-    outfile = 'decoded_%s'%(input_file[:-4]+'txt')
+    outfile = input_file[:-5]
     inf = open(input_file, 'rb')
     binary = inf.read()
     inf.close()
@@ -270,10 +270,6 @@ def main():
             # Decode flow here
             root = pickle.load(open('tree', 'rb'))
             decode(root, filename)
-            # with open(filename, 'rb') as textfile:
-            #     binary = textfile.read() 
-            # decoded_string = decode(root, binary)
-            # print decoded_string
         else:
             sys.exit('Invalid option: %s'%option)
 
